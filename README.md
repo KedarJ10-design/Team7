@@ -1,6 +1,6 @@
 # 🎯 Team 7 Goal Tracker
 
-A high-performance, gamified goal tracking and accountability platform purpose-built for **Team 7** (Kedar, Arya, Arnav, Ameya, Shriram, Gaurav, Prathmesh). 
+A high-performance, gamified goal tracking and accountability platform purpose-built for **Team 7**.
 
 Built with **Next.js 16 (App Router)**, **React 19**, **TypeScript**, **Tailwind CSS**, **Prisma ORM**, and **SQLite**.
 
@@ -11,9 +11,9 @@ Built with **Next.js 16 (App Router)**, **React 19**, **TypeScript**, **Tailwind
 - **🏆 Gamified Accountability:** Equal-weighted goal scoring with tiered safety zones and real-time visual progress trackers.
 - **📅 Strict Monthly Lifecycle:** Automatic 30-day goal cycles starting on the 15th of each month, with automated month-close evaluations on the 14th.
 - **🔒 Three-Tier Security Model:**
-  - **Shared Team Password** (`333`) for viewing the team dashboard and leaderboard.
-  - **Individual 4-Digit PINs** (`1234`) for personal profile updates and goal check-ins.
-  - **Elevated Admin Passphrase** (`111`) for threshold configuration and penalty settlements.
+  - **Shared Team Password** for viewing the team dashboard and leaderboard.
+  - **Individual 4-Digit PINs** for personal profile updates and goal check-ins.
+  - **Elevated Admin Passphrase** for threshold configuration and penalty settlements.
 - **🛡️ Battle-Tested Security:** OWASP Top 10 hardened, brute-force rate-limiting, strict IDOR ownership checks, sensitive credential hash redaction, and HSTS security headers.
 - **🎉 Rewards & Penalties:**
   - **100-Point Party Penalty:** Accumulating 100+ penalty points triggers a team party funded by the member.
@@ -39,17 +39,12 @@ Built with **Next.js 16 (App Router)**, **React 19**, **TypeScript**, **Tailwind
 
 ---
 
-## 👥 The 7 Members
+## 👥 Team Architecture
 
-| Name | Role | Default Color |
-| :--- | :--- | :---: |
-| **Kedar** | Lead / Admin | Indigo (`#6366f1`) |
-| **Arya** | Member | Purple (`#8b5cf6`) |
-| **Arnav** | Member | Pink (`#ec4899`) |
-| **Ameya** | Member | Rose (`#f43f5e`) |
-| **Shriram** | Member | Teal (`#14b8a6`) |
-| **Gaurav** | Member | Amber (`#f59e0b`) |
-| **Prathmesh** | Member | Blue (`#3b82f6`) |
+The system supports 7 team member profiles with:
+- **Individualized Color Accents & Avatars** for instant visual recognition.
+- **Role-Based Access Control** separating regular member permissions from administrator elevation.
+- **Self-Service Verification** via personal 4-digit PINs to ensure personal accountability and prevent peer tampering.
 
 ---
 
@@ -82,13 +77,13 @@ npm install
 ```bash
 cp .env.example .env
 ```
-*(Default credentials and dev keys are pre-filled in `.env.example`)*
+*(Configure `DATABASE_URL`, `SESSION_PASSWORD`, and `CRON_SECRET` in `.env`)*
 
 ### 4. Initialize Database & Clean Seed
 ```bash
 npm run db:setup
 ```
-This applies the Prisma schema and creates the 7 clean member profiles and system settings without any dummy test goals.
+This applies the Prisma schema and creates clean member profiles and system settings without any dummy test goals.
 
 ### 5. Launch Development Server
 ```bash
@@ -98,13 +93,13 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## 🔑 Default Credentials
+## 🔐 Authentication & Access Control
 
-| Level | Credential Type | Default Value | Notes |
-| :--- | :--- | :--- | :--- |
-| **Team Login** | Shared Password | `333` | Unlocks dashboard visibility |
-| **Member Verification** | 4-Digit Numeric PIN | `1234` | Enter when selecting a profile |
-| **Admin Elevation** | Admin Passphrase | `111` | Click the 🛡️ shield icon in navigation |
+| Level | Credential Type | Description |
+| :--- | :--- | :--- |
+| **Team Login** | Shared Team Password | Required to view the team dashboard and leaderboard |
+| **Member Verification** | 4-Digit Numeric PIN | Required when selecting a profile to log check-ins and edit goals |
+| **Admin Elevation** | Admin Passphrase | Click the 🛡️ shield icon in navigation for admin capabilities |
 
 ---
 
@@ -128,7 +123,7 @@ npm test
 - `npm run build` - Build production bundle
 - `npm run start` - Start production server
 - `npm test` - Execute complete 50-test automated suite
-- `npm run seed` - Re-seed database with clean Team 7 members
+- `npm run seed` - Re-seed database with clean member profiles
 - `npm run db:setup` - Push Prisma schema and seed clean database
 - `npm run db:reset` - Force wipe database and re-seed from scratch
 - `npm run lint` - Run ESLint code quality checks
