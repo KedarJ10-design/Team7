@@ -21,15 +21,17 @@ export async function GET() {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
-    const settings = await prisma.teamSettings.findUnique({
-      where: { id: 'singleton' },
-    });
+    const [settings, activeYear] = await Promise.all([
+      prisma.teamSettings.findUnique({
+        where: { id: 'singleton' },
+      }),
+      prisma.year.findFirst({
+        where: { isActive: true },
+      }),
+    ]);
 
-    const { cycleMonth, cycleYear } = getCycleInfo(settings?.cutoffDay || 15);
-
-    const activeYear = await prisma.year.findFirst({
-      where: { isActive: true },
-    });
+    const cutoffDay = settings?.cutoffDay || 15;
+    const { cycleMonth, cycleYear } = getCycleInfo(cutoffDay);
 
     let thresholds: PenaltyThresholds = DEFAULT_THRESHOLDS;
     let points: PenaltyPointValues = DEFAULT_PENALTY_POINTS;
@@ -119,6 +121,7 @@ export async function GET() {
       totalMembers: memberSummaries.length,
       currentMonth: cycleMonth,
       currentYear: cycleYear,
+      cutoffDay,
     });
   } catch (error) {
     console.error('Fetch members error:', error);

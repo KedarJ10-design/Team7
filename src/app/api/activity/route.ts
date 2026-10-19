@@ -52,17 +52,19 @@ export async function GET(request: Request) {
     ]);
 
     const logIds = logs.map((l) => l.id);
-    const reactions = await prisma.auditLog.findMany({
-      where: {
-        entity: 'reaction',
-        entityId: { in: logIds },
-      },
-      select: {
-        entityId: true,
-        actorId: true,
-        newValue: true,
-      },
-    });
+    const reactions = logIds.length > 0
+      ? await prisma.auditLog.findMany({
+          where: {
+            entity: 'reaction',
+            entityId: { in: logIds },
+          },
+          select: {
+            entityId: true,
+            actorId: true,
+            newValue: true,
+          },
+        })
+      : [];
 
     const reactionMap: Record<string, Record<string, number>> = {};
     reactions.forEach((r) => {

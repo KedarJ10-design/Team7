@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { Navbar } from '@/components/Navbar';
 import { Avatar } from '@/components/Avatar';
 import { ProgressBar } from '@/components/ProgressBar';
-import { TeamRadar } from '@/components/charts/TeamRadar';
 import {
   CrownIcon,
   GiftIcon,
@@ -22,6 +22,18 @@ import { MONTH_NAMES, getCycleInfo } from '@/lib/constants';
 import { CheerButton } from '@/components/CheerButton';
 import { fireConfetti } from '@/lib/confetti';
 import { SocialRecapModal } from '@/components/SocialRecapModal';
+
+const TeamRadar = dynamic(
+  () => import('@/components/charts/TeamRadar').then((mod) => mod.TeamRadar),
+  {
+    ssr: false,
+    loading: () => (
+      <div style={{ height: '350px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+        Loading Radar Visualization...
+      </div>
+    ),
+  }
+);
 
 interface SessionInfo {
   isLoggedIn: boolean;
@@ -51,15 +63,13 @@ export default function DashboardPage() {
   useEffect(() => {
     async function init() {
       try {
-        const [sessionRes, membersRes, settingsRes] = await Promise.all([
+        const [sessionRes, membersRes] = await Promise.all([
           fetch('/api/auth/session'),
           fetch('/api/members'),
-          fetch('/api/admin/settings'),
         ]);
 
         const sessionData = await sessionRes.json();
         const membersData = await membersRes.json();
-        const settingsData = await settingsRes.json();
 
         setSession(sessionData);
         if (membersData.members) {
@@ -68,8 +78,9 @@ export default function DashboardPage() {
           setRewardProgress(membersData.rewardProgress);
           setCurrentMonth(membersData.currentMonth || 10);
         }
-        const cDay = settingsData.settings?.cutoffDay || 15;
-        setCutoffDay(cDay);
+        if (membersData.cutoffDay) {
+          setCutoffDay(membersData.cutoffDay);
+        }
       } catch (err) {
         console.error('Failed to load dashboard:', err);
       } finally {
@@ -83,8 +94,16 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>Loading Team 7 Dashboard...</p>
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ height: '64px', borderBottom: '1px solid var(--border-subtle)', background: 'var(--bg-card)' }} />
+        <main className="container" style={{ flex: 1, padding: '1.5rem 1rem' }}>
+          <div style={{ height: '80px', borderRadius: 'var(--radius-md)', background: 'var(--bg-card)', marginBottom: '1.5rem', opacity: 0.6 }} />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+            {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+              <div key={i} style={{ height: '220px', borderRadius: 'var(--radius-md)', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', opacity: 0.5 }} />
+            ))}
+          </div>
+        </main>
       </div>
     );
   }

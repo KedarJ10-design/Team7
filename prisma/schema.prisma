@@ -84,6 +84,9 @@ model Goal {
   category        Category? @relation(fields: [categoryId], references: [id])
   progressUpdates ProgressUpdate[]
   quests          Quest[]
+
+  @@index([memberId])
+  @@index([yearId, type, month, archivedAt])
 }
 
 model ProgressUpdate {
@@ -97,6 +100,9 @@ model ProgressUpdate {
 
   goal  Goal   @relation(fields: [goalId], references: [id])
   actor Member @relation("ProgressActor", fields: [actorId], references: [id])
+
+  @@index([goalId, createdAt])
+  @@index([actorId])
 }
 
 model MonthlySnapshot {
@@ -125,6 +131,8 @@ model PenaltyLedgerEntry {
   createdAt DateTime @default(now())
 
   member Member @relation(fields: [memberId], references: [id])
+
+  @@index([memberId, createdAt])
 }
 
 model PenaltyEvent {
@@ -177,4 +185,9 @@ model AuditLog {
 
   actor        Member  @relation("AuditActor", fields: [actorId], references: [id])
   targetMember Member? @relation("AuditTarget", fields: [targetMemberId], references: [id])
+
+  @@index([createdAt])
+  @@index([entity, entityId])
+  @@index([actorId])
+  @@index([targetMemberId])
 }

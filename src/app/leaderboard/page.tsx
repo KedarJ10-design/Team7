@@ -34,19 +34,17 @@ export default function LeaderboardPage() {
   useEffect(() => {
     async function init() {
       try {
-        const [sessionRes, membersRes, settingsRes] = await Promise.all([
+        const [sessionRes, membersRes] = await Promise.all([
           fetch('/api/auth/session'),
           fetch('/api/members'),
-          fetch('/api/admin/settings'),
         ]);
 
         const sessionData = await sessionRes.json();
         const membersData = await membersRes.json();
-        const settingsData = await settingsRes.json();
 
         setSession(sessionData);
-        if (settingsData.settings?.cutoffDay) {
-          setCutoffDay(settingsData.settings.cutoffDay);
+        if (membersData.cutoffDay) {
+          setCutoffDay(membersData.cutoffDay);
         }
         if (membersData.members) {
           const sorted = [...membersData.members].sort(
@@ -70,8 +68,16 @@ export default function LeaderboardPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <p style={{ color: 'var(--text-secondary)' }}>Loading Syndicate Standings...</p>
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ height: '64px', borderBottom: '1px solid var(--border-subtle)', background: 'var(--bg-card)' }} />
+        <main className="container" style={{ flex: 1, padding: '1.5rem 1rem' }}>
+          <div style={{ height: '70px', borderRadius: 'var(--radius-md)', background: 'var(--bg-card)', marginBottom: '1.5rem', opacity: 0.6 }} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+            {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+              <div key={i} style={{ height: '80px', borderRadius: 'var(--radius-md)', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', opacity: 0.5 }} />
+            ))}
+          </div>
+        </main>
       </div>
     );
   }

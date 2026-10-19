@@ -17,14 +17,16 @@ export async function GET(
     }
 
     const { id } = await params;
-    const settings = await prisma.teamSettings.findUnique({
-      where: { id: 'singleton' },
-    });
-    const { cycleMonth } = getCycleInfo(settings?.cutoffDay || 15);
-
-    const activeYear = await prisma.year.findFirst({
-      where: { isActive: true },
-    });
+    const [settings, activeYear] = await Promise.all([
+      prisma.teamSettings.findUnique({
+        where: { id: 'singleton' },
+      }),
+      prisma.year.findFirst({
+        where: { isActive: true },
+      }),
+    ]);
+    const cutoffDay = settings?.cutoffDay || 15;
+    const { cycleMonth } = getCycleInfo(cutoffDay);
 
     const member = await prisma.member.findUnique({
       where: { id },

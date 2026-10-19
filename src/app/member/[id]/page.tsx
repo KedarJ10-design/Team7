@@ -1,11 +1,23 @@
 'use client';
 
 import React, { useEffect, useState, use } from 'react';
+import dynamic from 'next/dynamic';
 import { Navbar } from '@/components/Navbar';
 import { Avatar } from '@/components/Avatar';
 import { ProgressBar } from '@/components/ProgressBar';
-import { PersonalRadar } from '@/components/charts/PersonalRadar';
 import { ProgressModal } from '@/components/ProgressModal';
+
+const PersonalRadar = dynamic(
+  () => import('@/components/charts/PersonalRadar').then((mod) => mod.PersonalRadar),
+  {
+    ssr: false,
+    loading: () => (
+      <div style={{ height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+        Loading Radar Visualization...
+      </div>
+    ),
+  }
+);
 import { Member, Goal, MonthlySnapshot, AuditLogEntry } from '@/types';
 import { MONTH_NAMES } from '@/lib/constants';
 import { TargetIcon, RadarIcon, ActivityIcon, EditIcon } from '@/components/ui/Icons';
@@ -131,8 +143,15 @@ export default function MemberProfilePage({
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <p style={{ color: 'var(--text-secondary)' }}>Loading member profile...</p>
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ height: '64px', borderBottom: '1px solid var(--border-subtle)', background: 'var(--bg-card)' }} />
+        <main className="container" style={{ flex: 1, padding: '1.5rem 1rem' }}>
+          <div style={{ height: '140px', borderRadius: 'var(--radius-md)', background: 'var(--bg-card)', marginBottom: '1.5rem', opacity: 0.6 }} />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
+            <div style={{ height: '260px', borderRadius: 'var(--radius-md)', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', opacity: 0.5 }} />
+            <div style={{ height: '260px', borderRadius: 'var(--radius-md)', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', opacity: 0.5 }} />
+          </div>
+        </main>
       </div>
     );
   }

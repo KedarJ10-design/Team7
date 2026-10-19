@@ -19,4 +19,5 @@ export const prisma =
   globalForPrisma.prisma ||
   new PrismaClient({ adapter });
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+// Cache unconditionally on globalThis so warm serverless function instances reuse the client & adapter
+globalForPrisma.prisma = prisma;
