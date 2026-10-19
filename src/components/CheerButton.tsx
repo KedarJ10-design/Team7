@@ -58,16 +58,20 @@ export function CheerButton({
       style={{
         display: 'inline-flex',
         alignItems: 'center',
+        justifyContent: 'center',
         gap: '0.35rem',
-        fontSize: '0.75rem',
-        padding: '0.35rem 0.65rem',
-        borderRadius: 'var(--radius-xs)',
+        fontSize: '0.8rem',
+        fontWeight: 700,
+        height: '38px',
+        padding: '0 0.75rem',
+        borderRadius: 'var(--radius-sm)',
         background: cheered ? 'var(--status-safe-bg)' : 'rgba(245, 158, 11, 0.08)',
         color: cheered ? 'var(--status-safe)' : 'var(--status-warning)',
-        borderColor: cheered ? 'var(--status-safe-border)' : 'rgba(245, 158, 11, 0.25)',
+        border: `1px solid ${cheered ? 'var(--status-safe-border)' : 'rgba(245, 158, 11, 0.25)'}`,
         cursor: 'pointer',
         transition: 'all 0.2s ease',
         whiteSpace: 'nowrap',
+        flexShrink: 0,
       }}
     >
       <span>{cheered ? '🙌 Cheered!' : '⚡ Cheer'}</span>

@@ -42,7 +42,7 @@ export function ProgressBar({
     if (p >= 75) return 'Safe';
     if (p >= 50) return 'Warning';
     if (p > 0) return 'At Risk';
-    return '0%';
+    return 'Not Started';
   };
 
   const gradient = getGradient(clamped);

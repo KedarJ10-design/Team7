@@ -446,6 +446,7 @@ export default function DashboardPage() {
                       labelPrefix="Monthly Completion"
                       variant="segmented"
                       showMilestones={true}
+                      showStatusChip={false}
                     />
                   </div>
 
@@ -497,24 +498,27 @@ export default function DashboardPage() {
                   </div>
 
                   {/* View Goals Action Button & Peer Cheer Button */}
-                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', width: '100%', minWidth: 0 }}>
                     <Link
                       href={`/member/${m.id}`}
                       className="btn btn-secondary"
                       style={{
                         flex: 1,
-                        padding: '0.6rem 0.85rem',
-                        fontSize: '0.85rem',
+                        minWidth: 0,
+                        height: '38px',
+                        padding: '0 0.85rem',
+                        fontSize: '0.84rem',
                         fontWeight: 700,
                         borderRadius: 'var(--radius-sm)',
-                        display: 'flex',
+                        display: 'inline-flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        gap: '0.45rem',
+                        gap: '0.4rem',
+                        whiteSpace: 'nowrap',
                       }}
                     >
-                      <span>View Goals & Profile</span>
-                      <span style={{ fontSize: '1rem' }}>→</span>
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>View Goals</span>
+                      <span style={{ fontSize: '0.95rem', flexShrink: 0 }}>→</span>
                     </Link>
 
                     {m.monthlyPercent < 75 && session?.memberId !== m.id && (
