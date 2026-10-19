@@ -47,13 +47,16 @@ export async function POST(
 
     // 30-Day Progress Window & Closed-Cycle Immutability Check
     if (goal.type === 'MONTHLY' && goal.month !== null) {
-      const { cycleMonth } = getCycleInfo();
+      const settings = await prisma.teamSettings.findUnique({ where: { id: 'singleton' } });
+      const cutoffDay = settings?.cutoffDay || 15;
+      const { cycleMonth } = getCycleInfo(cutoffDay);
       const isCurrentActiveCycle = goal.month === cycleMonth;
+      const evalDay = cutoffDay === 1 ? 28 : cutoffDay - 1;
 
-      // Previous cycles that have concluded (evaluated on the 14th) are permanently locked
+      // Previous cycles that have concluded (evaluated on evalDay) are permanently locked
       if (!isCurrentActiveCycle && !session.isAdmin) {
         return NextResponse.json({
-          error: `Month ${goal.month} cycle has closed (evaluated on the 14th). Progress cannot be retroactively modified.`,
+          error: `Month ${goal.month} cycle has closed (evaluated on Day ${evalDay}). Progress cannot be retroactively modified.`,
         }, { status: 403 });
       }
     }

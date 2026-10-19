@@ -19,7 +19,6 @@ interface SessionInfo {
 }
 
 export default function AdminPage() {
-  const cycleInfo = getCycleInfo();
   const [session, setSession] = useState<SessionInfo | null>(null);
   const [adminPassword, setAdminPassword] = useState('');
   const [isUnlocked, setIsUnlocked] = useState(false);
@@ -29,6 +28,7 @@ export default function AdminPage() {
   // Settings state
   const [settings, setSettings] = useState<TeamSettings | null>(null);
   const [cutoffDay, setCutoffDay] = useState(15);
+  const cycleInfo = getCycleInfo(cutoffDay);
   const [pinsEnabled, setPinsEnabled] = useState(true);
   const [selfEditOnly, setSelfEditOnly] = useState(true);
   const [saveSuccess, setSaveSuccess] = useState('');
@@ -295,10 +295,10 @@ export default function AdminPage() {
                   </div>
                   <div>
                     <h2 style={{ fontSize: '1.2rem', fontWeight: 700 }}>
-                      Cycle Evaluation & Snapshots (14th Settlement)
+                      Cycle Evaluation & Snapshots (Day {cycleInfo.settlementDay} Settlement)
                     </h2>
                     <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '0.2rem' }}>
-                      Evaluates goals, calculates rewards/penalties, and locks the cycle. Concludes on the 14th of each month.
+                      Evaluates goals, calculates rewards/penalties, and locks the cycle. Concludes on Day {cycleInfo.settlementDay} of each cycle.
                     </p>
                   </div>
                 </div>

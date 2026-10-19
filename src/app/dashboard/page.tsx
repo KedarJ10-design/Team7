@@ -36,13 +36,13 @@ interface SessionInfo {
 }
 
 export default function DashboardPage() {
-  const cycleInfo = getCycleInfo();
+  const [cutoffDay, setCutoffDay] = useState(15);
+  const cycleInfo = getCycleInfo(cutoffDay);
   const [members, setMembers] = useState<MemberDashboardData[]>([]);
   const [topScorer, setTopScorer] = useState<MemberDashboardData | null>(null);
   const [rewardProgress, setRewardProgress] = useState(0);
   const [currentMonth, setCurrentMonth] = useState(10);
   const [session, setSession] = useState<SessionInfo | null>(null);
-  const [cutoffDay, setCutoffDay] = useState(15);
   const [filter, setFilter] = useState<'all' | 'safe' | 'risk'>('all');
   const [activeTab, setActiveTab] = useState<'cards' | 'radar'>('cards');
   const [loading, setLoading] = useState(true);
@@ -301,8 +301,8 @@ export default function DashboardPage() {
                 </div>
                 <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.1rem' }}>
                   {cycleInfo.isRegistrationDay
-                    ? 'Goal Registration is OPEN today (15th)!'
-                    : '30-day progress updates active • Close & scoring on 14th'}
+                    ? `Goal Registration is OPEN today (Day ${cutoffDay})!`
+                    : `30-day progress updates active • Close & scoring on Day ${cycleInfo.settlementDay}`}
                 </div>
               </div>
             </div>

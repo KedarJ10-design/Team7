@@ -21,14 +21,14 @@ export async function GET() {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
-    const { cycleMonth, cycleYear } = getCycleInfo();
+    const settings = await prisma.teamSettings.findUnique({
+      where: { id: 'singleton' },
+    });
+
+    const { cycleMonth, cycleYear } = getCycleInfo(settings?.cutoffDay || 15);
 
     const activeYear = await prisma.year.findFirst({
       where: { isActive: true },
-    });
-
-    const settings = await prisma.teamSettings.findUnique({
-      where: { id: 'singleton' },
     });
 
     let thresholds: PenaltyThresholds = DEFAULT_THRESHOLDS;

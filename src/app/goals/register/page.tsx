@@ -21,11 +21,11 @@ interface SessionInfo {
 }
 
 export default function RegisterGoalsPage() {
-  const cycleInfo = getCycleInfo();
   const [session, setSession] = useState<SessionInfo | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
   const [selectedMemberId, setSelectedMemberId] = useState('');
   const [cutoffDay, setCutoffDay] = useState(15);
+  const cycleInfo = getCycleInfo(cutoffDay);
   const [existingGoals, setExistingGoals] = useState<Goal[]>([]);
 
   // Persistent Form Drafts (localStorage auto-sync)
@@ -47,7 +47,6 @@ export default function RegisterGoalsPage() {
 
   const loadData = async () => {
     try {
-      setCurrentMonth(cycleInfo.cycleMonth);
       const [sessionRes, membersRes, settingsRes] = await Promise.all([
         fetch('/api/auth/session'),
         fetch('/api/members'),
@@ -58,27 +57,28 @@ export default function RegisterGoalsPage() {
       const membersData = await membersRes.json();
       const settingsData = await settingsRes.json();
 
+      const cDay = settingsData.settings?.cutoffDay || 15;
+      setCutoffDay(cDay);
+      const dynamicInfo = getCycleInfo(cDay);
+      setCurrentMonth(dynamicInfo.cycleMonth);
+      setDaysLeft(dynamicInfo.daysLeft);
+      setIsLocked(!dynamicInfo.isRegistrationDay && !sessionData.isAdmin);
+
       setSession(sessionData);
       if (membersData.members) {
         setMembers(membersData.members);
         const defaultMemberId = sessionData.memberId || membersData.members[0]?.id;
         setSelectedMemberId(defaultMemberId);
-        loadMemberGoals(defaultMemberId);
+        loadMemberGoals(defaultMemberId, dynamicInfo.cycleMonth);
       }
-      const cDay = settingsData.settings?.cutoffDay || 15;
-      if (settingsData.settings?.cutoffDay) {
-        setCutoffDay(cDay);
-      }
-      setDaysLeft(cycleInfo.daysLeft);
-      setIsLocked(!cycleInfo.isRegistrationDay && !sessionData.isAdmin);
     } catch (err) {
       console.error('Failed to load goal registration data:', err);
     }
   };
 
-  const loadMemberGoals = async (memberId: string) => {
+  const loadMemberGoals = async (memberId: string, month: number = currentMonth) => {
     try {
-      const res = await fetch(`/api/goals?memberId=${memberId}&month=${currentMonth}`);
+      const res = await fetch(`/api/goals?memberId=${memberId}&month=${month}`);
       const data = await res.json();
       if (data.goals) {
         setExistingGoals(data.goals);
@@ -185,16 +185,16 @@ export default function RegisterGoalsPage() {
           <div>
             <div style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--text-primary)' }}>
               {cycleInfo.isRegistrationDay
-                ? `Registration Window is OPEN Today (15th)!`
+                ? `Registration Window is OPEN Today (Day ${cutoffDay})!`
                 : `Goal Registration Window for ${cycleInfo.cycleLabel}`}
             </div>
             <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '0.2rem' }}>
               {cycleInfo.isRegistrationDay
                 ? `Team members can register goals today for the new 30-day cycle (${cycleInfo.cycleLabel}).`
-                : `Goal registration is open only 1 day: the 15th of every month. ${
+                : `Goal registration is open only 1 day: Day ${cutoffDay} of each cycle. ${
                     session?.isAdmin
                       ? 'Admin override active — you can register goals anytime.'
-                      : 'Progress updates remain open for 30 days until the 14th cutoff.'
+                      : `Progress updates remain open for 30 days until Day ${cycleInfo.settlementDay} settlement.`
                   }`}
             </div>
           </div>
@@ -210,7 +210,7 @@ export default function RegisterGoalsPage() {
           >
             {cycleInfo.isRegistrationDay ? (
               <>
-                <CalendarIcon size={14} /> Open Today (15th)
+                <CalendarIcon size={14} /> Open Today (Day {cutoffDay})
               </>
             ) : session?.isAdmin ? (
               <>
@@ -218,7 +218,7 @@ export default function RegisterGoalsPage() {
               </>
             ) : (
               <>
-                <LockIcon size={14} /> Opens on 15th
+                <LockIcon size={14} /> Opens on Day {cutoffDay}
               </>
             )}
           </span>
@@ -418,7 +418,7 @@ export default function RegisterGoalsPage() {
                 'Registering...'
               ) : isLocked && goalType === 'MONTHLY' ? (
                 <>
-                  <LockIcon size={16} /> Registration Closed (Opens on 15th)
+                  <LockIcon size={16} /> Registration Closed (Opens on Day {cutoffDay})
                 </>
               ) : session?.isAdmin && !cycleInfo.isRegistrationDay ? (
                 '+ Register Goal (Admin Override)'

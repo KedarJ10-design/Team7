@@ -24,7 +24,8 @@ interface SessionInfo {
 }
 
 export default function LeaderboardPage() {
-  const cycleInfo = getCycleInfo();
+  const [cutoffDay, setCutoffDay] = useState(15);
+  const cycleInfo = getCycleInfo(cutoffDay);
   const [session, setSession] = useState<SessionInfo | null>(null);
   const [members, setMembers] = useState<MemberDashboardData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,15 +34,20 @@ export default function LeaderboardPage() {
   useEffect(() => {
     async function init() {
       try {
-        const [sessionRes, membersRes] = await Promise.all([
+        const [sessionRes, membersRes, settingsRes] = await Promise.all([
           fetch('/api/auth/session'),
           fetch('/api/members'),
+          fetch('/api/admin/settings'),
         ]);
 
         const sessionData = await sessionRes.json();
         const membersData = await membersRes.json();
+        const settingsData = await settingsRes.json();
 
         setSession(sessionData);
+        if (settingsData.settings?.cutoffDay) {
+          setCutoffDay(settingsData.settings.cutoffDay);
+        }
         if (membersData.members) {
           const sorted = [...membersData.members].sort(
             (a: MemberDashboardData, b: MemberDashboardData) => {

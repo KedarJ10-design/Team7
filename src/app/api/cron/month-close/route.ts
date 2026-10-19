@@ -29,7 +29,8 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json().catch(() => ({}));
-    const { cycleMonth } = getCycleInfo();
+    const settings = await prisma.teamSettings.findUnique({ where: { id: 'singleton' } });
+    const { cycleMonth } = getCycleInfo(settings?.cutoffDay || 15);
     let targetMonth = cycleMonth;
 
     if (body.month !== undefined && body.month !== null) {
@@ -47,8 +48,6 @@ export async function POST(request: Request) {
     if (!activeYear) {
       return NextResponse.json({ error: 'No active year found for month close' }, { status: 400 });
     }
-
-    const settings = await prisma.teamSettings.findUnique({ where: { id: 'singleton' } });
     let thresholds: PenaltyThresholds = DEFAULT_THRESHOLDS;
     let points: PenaltyPointValues = DEFAULT_PENALTY_POINTS;
     if (settings?.thresholds) {

@@ -80,23 +80,34 @@ export interface CycleInfo {
   isEvaluationDay: boolean;
   daysLeft: number;
   cycleLabel: string;
+  cutoffDay: number;
+  settlementDay: number;
 }
 
 /**
- * Get the current 30-day mid-month tracking cycle info (15th to 14th)
+ * Get the current 30-day tracking cycle info based on dynamic cutoffDay (defaults to 15th-14th)
  */
-export function getCycleInfo(testDate?: Date): CycleInfo {
+export function getCycleInfo(cutoffDayOrDate?: number | Date, testDate?: Date): CycleInfo {
+  let cutoffDay = 15;
+  let tDate = testDate;
+
+  if (typeof cutoffDayOrDate === 'number') {
+    cutoffDay = Math.min(28, Math.max(1, Math.round(cutoffDayOrDate)));
+  } else if (cutoffDayOrDate instanceof Date) {
+    tDate = cutoffDayOrDate;
+  }
+
   const istOffset = 5.5 * 60 * 60 * 1000;
   let year: number;
   let month: number;
   let day: number;
   let currentMs: number;
 
-  if (testDate) {
-    year = testDate.getFullYear();
-    month = testDate.getMonth() + 1;
-    day = testDate.getDate();
-    currentMs = Date.UTC(year, month - 1, day, testDate.getHours(), testDate.getMinutes(), testDate.getSeconds());
+  if (tDate) {
+    year = tDate.getFullYear();
+    month = tDate.getMonth() + 1;
+    day = tDate.getDate();
+    currentMs = Date.UTC(year, month - 1, day, tDate.getHours(), tDate.getMinutes(), tDate.getSeconds());
   } else {
     const now = new Date();
     const istInstant = new Date(now.getTime() + istOffset);
@@ -106,8 +117,7 @@ export function getCycleInfo(testDate?: Date): CycleInfo {
     currentMs = Date.UTC(year, month - 1, day, istInstant.getUTCHours(), istInstant.getUTCMinutes(), istInstant.getUTCSeconds());
   }
 
-  const isRegistrationDay = day === 15;
-  const isEvaluationDay = day === 14;
+  const isRegistrationDay = day === cutoffDay;
 
   let cycleStartMonth = month;
   let cycleStartYear = year;
@@ -116,7 +126,7 @@ export function getCycleInfo(testDate?: Date): CycleInfo {
   let cycleMonth = month;
   let cycleYear = year;
 
-  if (day < 15) {
+  if (day < cutoffDay) {
     cycleStartMonth = month === 1 ? 12 : month - 1;
     cycleStartYear = month === 1 ? year - 1 : year;
     cycleEndMonth = month;
@@ -125,8 +135,18 @@ export function getCycleInfo(testDate?: Date): CycleInfo {
     cycleYear = cycleStartYear;
   }
 
-  // Target end date in IST is the 14th of cycleEndMonth at 23:59:59
-  const endMs = Date.UTC(cycleEndYear, cycleEndMonth - 1, 14, 23, 59, 59);
+  // Calculate dynamic settlement day (one day before cutoffDay in the end month)
+  // E.g. cutoffDay 20 -> settlementDay 19; cutoffDay 15 -> settlementDay 14.
+  // If cutoffDay is 1, settlement falls on the last calendar day of the cycleEndMonth.
+  let settlementDay = cutoffDay - 1;
+  if (settlementDay < 1) {
+    settlementDay = new Date(Date.UTC(cycleEndYear, cycleEndMonth, 0)).getUTCDate();
+  }
+
+  const isEvaluationDay = day === settlementDay;
+
+  // Target end date in IST is the settlement day of cycleEndMonth at 23:59:59
+  const endMs = Date.UTC(cycleEndYear, cycleEndMonth - 1, settlementDay, 23, 59, 59);
   const diffMs = endMs - currentMs;
   const daysLeft = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
 
@@ -143,15 +163,17 @@ export function getCycleInfo(testDate?: Date): CycleInfo {
     isRegistrationDay,
     isEvaluationDay,
     daysLeft,
-    cycleLabel: `${MONTH_SHORT[cycleStartMonth - 1]} 15 – ${MONTH_SHORT[cycleEndMonth - 1]} 14`,
+    cycleLabel: `${MONTH_SHORT[cycleStartMonth - 1]} ${cutoffDay} – ${MONTH_SHORT[cycleEndMonth - 1]} ${settlementDay}`,
+    cutoffDay,
+    settlementDay,
   };
 }
 
 /**
- * Check if registration for new monthly goals is open (only 1 day: the 15th, or admin)
+ * Check if registration for new monthly goals is open (on cutoffDay for regular members, or any day for admin)
  */
-export function canRegisterMonthlyGoals(day: number, isAdmin: boolean): boolean {
+export function canRegisterMonthlyGoals(day: number, isAdmin: boolean, cutoffDay: number = 15): boolean {
   if (isAdmin) return true;
-  return day === 15;
+  return day === cutoffDay;
 }
 

@@ -90,14 +90,16 @@ export async function POST(request: Request) {
       targetMonth = null;
     }
 
-    // Check 1-day registration window: only on the 15th of the month
+    // Check 1-day registration window: only on the cutoffDay of the month
     if (type === 'MONTHLY') {
-      const { day, isRegistrationDay, cycleMonth } = getCycleInfo();
+      const settings = await prisma.teamSettings.findUnique({ where: { id: 'singleton' } });
+      const cutoffDay = settings?.cutoffDay || 15;
+      const { day, isRegistrationDay, cycleMonth } = getCycleInfo(cutoffDay);
       targetMonth = month ? Number(month) : cycleMonth;
 
       if (!isRegistrationDay && !session.isAdmin) {
         return NextResponse.json({
-          error: `Monthly goal registration is only open on the 15th of each month (Today is Day ${day}). Only an admin can register goals outside this 1-day window.`,
+          error: `Monthly goal registration is only open on Day ${cutoffDay} of each month (Today is Day ${day}). Only an admin can register goals outside this 1-day window.`,
         }, { status: 403 });
       }
     }
