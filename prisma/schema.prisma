@@ -1,0 +1,180 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Member {
+  id          String   @id @default(cuid())
+  name        String
+  email       String?
+  phone       String?
+  dob         String?
+  avatarColor String   @default("#6366f1")
+  isAdmin     Boolean  @default(false)
+  pinHash     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  goals              Goal[]
+  progressUpdates    ProgressUpdate[] @relation("ProgressActor")
+  snapshots          MonthlySnapshot[]
+  penaltyLedger      PenaltyLedgerEntry[]
+  penaltyEvents      PenaltyEvent[]
+  quests             Quest[]
+  auditLogsAsActor   AuditLog[]       @relation("AuditActor")
+  auditLogsAsTarget  AuditLog[]       @relation("AuditTarget")
+}
+
+model TeamSettings {
+  id                 String  @id @default("singleton")
+  passwordHash       String
+  adminPasswordHash  String
+  cutoffDay          Int     @default(15)
+  thresholds         String  @default("{\"safe\":75,\"warning\":50,\"danger\":0}")
+  penaltyPoints      String  @default("{\"safe\":0,\"warning\":5,\"danger\":10,\"notStarted\":25}")
+  penaltyThreshold   Int     @default(100)
+  rewardTiersEnabled Boolean @default(false)
+  selfEditOnly       Boolean @default(true)
+  pinsEnabled        Boolean @default(true)
+  timezone           String  @default("Asia/Kolkata")
+}
+
+model Year {
+  id       String  @id @default(cuid())
+  label    String  @unique
+  isActive Boolean @default(false)
+
+  goals     Goal[]
+  snapshots MonthlySnapshot[]
+  rewards   TeamReward[]
+}
+
+model Category {
+  id    String @id @default(cuid())
+  name  String @unique
+  goals Goal[]
+}
+
+model Goal {
+  id              String    @id @default(cuid())
+  memberId        String
+  yearId          String
+  type            String    @default("MONTHLY")
+  month           Int?
+  title           String
+  target          String?
+  currentProgress Int       @default(0)
+  categoryId      String?
+  deadline        String?
+  isDone          Boolean   @default(false)
+  lockedAt        DateTime?
+  archivedAt      DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  member          Member    @relation(fields: [memberId], references: [id])
+  year            Year      @relation(fields: [yearId], references: [id])
+  category        Category? @relation(fields: [categoryId], references: [id])
+  progressUpdates ProgressUpdate[]
+  quests          Quest[]
+}
+
+model ProgressUpdate {
+  id        String   @id @default(cuid())
+  goalId    String
+  oldValue  Int
+  newValue  Int
+  note      String?
+  actorId   String
+  createdAt DateTime @default(now())
+
+  goal  Goal   @relation(fields: [goalId], references: [id])
+  actor Member @relation("ProgressActor", fields: [actorId], references: [id])
+}
+
+model MonthlySnapshot {
+  id       String   @id @default(cuid())
+  memberId String
+  yearId   String
+  month    Int
+  percent  Float
+  penalty  Int
+  score    Float
+  closedAt DateTime @default(now())
+
+  member Member @relation(fields: [memberId], references: [id])
+  year   Year   @relation(fields: [yearId], references: [id])
+
+  @@unique([memberId, yearId, month])
+}
+
+model PenaltyLedgerEntry {
+  id        String   @id @default(cuid())
+  memberId  String
+  points    Int
+  reason    String
+  month     Int
+  yearId    String
+  createdAt DateTime @default(now())
+
+  member Member @relation(fields: [memberId], references: [id])
+}
+
+model PenaltyEvent {
+  id          String    @id @default(cuid())
+  memberId    String
+  triggeredAt DateTime  @default(now())
+  type        String    @default("party")
+  paidAt      DateTime?
+  note        String?
+
+  member Member @relation(fields: [memberId], references: [id])
+}
+
+model Quest {
+  id          String    @id @default(cuid())
+  memberId    String
+  goalId      String?
+  title       String
+  status      String    @default("todo")
+  createdAt   DateTime  @default(now())
+  completedAt DateTime?
+  archivedAt  DateTime?
+
+  member Member @relation(fields: [memberId], references: [id])
+  goal   Goal?  @relation(fields: [goalId], references: [id])
+}
+
+model TeamReward {
+  id       String  @id @default(cuid())
+  yearId   String
+  month    Int
+  unlocked Boolean @default(false)
+  note     String?
+
+  year Year @relation(fields: [yearId], references: [id])
+
+  @@unique([yearId, month])
+}
+
+model AuditLog {
+  id             String   @id @default(cuid())
+  actorId        String
+  targetMemberId String?
+  entity         String
+  entityId       String
+  action         String
+  oldValue       String?
+  newValue       String?
+  createdAt      DateTime @default(now())
+
+  actor        Member  @relation("AuditActor", fields: [actorId], references: [id])
+  targetMember Member? @relation("AuditTarget", fields: [targetMemberId], references: [id])
+}

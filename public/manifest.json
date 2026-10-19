@@ -1,0 +1,31 @@
+{
+  "name": "Team 7 Tracker — Goal Syndicate",
+  "short_name": "Team 7",
+  "description": "7 friends keeping each other accountable, hitting targets, and unlocking rewards.",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#080b11",
+  "theme_color": "#f43f5e",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Add Goal",
+      "short_name": "Add",
+      "url": "/goals/register",
+      "icons": [{ "src": "/favicon.ico", "sizes": "64x64" }]
+    },
+    {
+      "name": "Leaderboard",
+      "short_name": "Standings",
+      "url": "/leaderboard",
+      "icons": [{ "src": "/favicon.ico", "sizes": "64x64" }]
+    }
+  ]
+}
