@@ -8,7 +8,10 @@ const url = process.env.DATABASE_URL && !process.env.DATABASE_URL.startsWith('fi
   ? process.env.DATABASE_URL
   : `file:${dbPath}`;
 
-const adapter = new PrismaLibSql({ url });
+const adapter = new PrismaLibSql({
+  url,
+  authToken: process.env.TURSO_AUTH_TOKEN,
+});
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 

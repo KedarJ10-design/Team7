@@ -1,0 +1,16 @@
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=file:/app/dev.db
+      - SESSION_PASSWORD=team-goal-tracker-super-secret-session-password-32chars
+      - CRON_SECRET=team-goal-tracker-cron-secret-key
+    volumes:
+      - app_data:/app
+
+volumes:
+  app_data:
