@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
     "test": "tsx --test tests/scoring.test.ts tests/security.test.ts tests/cycle.test.ts tests/logical_audit.test.ts",
