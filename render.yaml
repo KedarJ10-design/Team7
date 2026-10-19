@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: team7-goal-tracker
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run db:setup && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        value: file:./dev.db
+      - key: SESSION_PASSWORD
+        generateValue: true
+      - key: CRON_SECRET
+        generateValue: true
